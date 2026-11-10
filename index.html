@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text Reverser</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1d2330;
+      --muted: #6b7280;
+      --border: #d7dbe2;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151b;
+        --card: #1b2029;
+        --text: #e6e9ef;
+        --muted: #9aa3b2;
+        --border: #2e3542;
+        --accent: #60a5fa;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    p.hint { margin: 0 0 20px; color: var(--muted); }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      font: inherit;
+      font-size: 1.1rem;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    output {
+      display: block;
+      min-height: 2.6em;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      font-size: 1.1rem;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .row { margin-top: 18px; }
+    button {
+      margin-top: 12px;
+      font: inherit;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: default; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Text Reverser</h1>
+    <p class="hint">Type anything — e.g. “con” becomes “noc”.</p>
+
+    <label for="input">Your text</label>
+    <input id="input" type="text" placeholder="con" autocomplete="off" autofocus>
+
+    <div class="row">
+      <label for="result">Reversed</label>
+      <output id="result" for="input" aria-live="polite"></output>
+      <button id="copy" type="button" disabled>Copy</button>
+    </div>
+  </main>
+
+  <script>
+    // Reverse by user-perceived characters (graphemes) so emoji and
+    // accented letters stay intact; fall back to code points.
+    function reverse(text) {
+      if (typeof Intl !== "undefined" && Intl.Segmenter) {
+        const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+        return Array.from(seg.segment(text), s => s.segment).reverse().join("");
+      }
+      return Array.from(text).reverse().join("");
+    }
+
+    const input = document.getElementById("input");
+    const result = document.getElementById("result");
+    const copy = document.getElementById("copy");
+
+    input.addEventListener("input", () => {
+      result.textContent = reverse(input.value);
+      copy.disabled = input.value.length === 0;
+      copy.textContent = "Copy";
+    });
+
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(result.textContent);
+        copy.textContent = "Copied!";
+      } catch {
+        copy.textContent = "Copy failed";
+      }
+    });
+  </script>
+</body>
+</html>
