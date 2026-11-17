@@ -122,6 +122,23 @@
       return Array.from(text).reverse().join("");
     }
 
+    // Hebrew final letters: after reversing, a final letter (ך ם ן ף ץ) can end
+    // up mid-word and a regular one at the end ("ילד כותב" -> "בתוכ דלי").
+    // Make every one regular, then use the final form for the last letter of
+    // each Hebrew word (2+ letters; vowel points are skipped over).
+    const TO_REGULAR = { "ך": "כ", "ם": "מ", "ן": "נ", "ף": "פ", "ץ": "צ" };
+    const TO_FINAL = { "כ": "ך", "מ": "ם", "נ": "ן", "פ": "ף", "צ": "ץ" };
+    function fixHebrewFinals(text) {
+      return text
+        .replace(/[ךםןףץ]/g, c => TO_REGULAR[c])
+        .replace(/(?<=[\u05D0-\u05EA][\u0591-\u05C7]*)[כמנפצ](?=[\u0591-\u05C7]*(?![\u05D0-\u05EA\u0591-\u05C7]))/g,
+                 c => TO_FINAL[c]);
+    }
+
+    function reversedInput() {
+      return fixHebrewFinals(reverse(input.value));
+    }
+
     // Split text into [{ text, isWord }] pieces, keeping spaces/punctuation.
     function tokenize(text) {
       return text.split(/([\p{L}\p{M}']+)/u)
@@ -190,7 +207,7 @@
     const status = document.getElementById("status");
 
     function render() {
-      const reversed = reverse(input.value);
+      const reversed = reversedInput();
       result.textContent = "";
       for (const tok of tokenize(reversed)) {
         const key = tok.isWord ? lookupKey(tok.text) : null;
@@ -212,7 +229,7 @@
     async function checkWords() {
       const id = ++runId;
       const keys = [...new Set(
-        tokenize(reverse(input.value))
+        tokenize(reversedInput())
           .filter(t => t.isWord)
           .map(t => lookupKey(t.text))
           .filter(k => Array.from(k).length >= MIN_LEN && !cache.has(k))
