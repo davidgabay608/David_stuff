@@ -70,15 +70,15 @@
       word-break: break-word;
       white-space: pre-wrap;
     }
-    .real {
-      text-decoration: underline;
+    .error {
+      text-decoration: underline wavy;
       text-decoration-color: var(--word);
-      text-decoration-thickness: 2px;
+      text-decoration-thickness: 1.5px;
       text-underline-offset: 4px;
     }
     .row { margin-top: 18px; }
     .legend { margin: 10px 0 0; font-size: 0.9rem; color: var(--muted); }
-    .legend .real { color: var(--text); }
+    .legend .error { color: var(--text); }
     #status { margin: 4px 0 0; font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
     button {
       margin-top: 12px;
@@ -104,7 +104,7 @@
     <div class="row">
       <label for="result">Reversed</label>
       <output id="result" for="input" dir="auto" aria-live="polite"></output>
-      <p class="legend"><span class="real">underlined</span> = a real English or Hebrew word</p>
+      <p class="legend"><span class="error">underlined</span> = not a real English or Hebrew word</p>
       <p id="status"></p>
       <button id="copy" type="button" disabled>Copy</button>
     </div>
@@ -194,10 +194,10 @@
       result.textContent = "";
       for (const tok of tokenize(reversed)) {
         const key = tok.isWord ? lookupKey(tok.text) : null;
-        if (key && cache.get(key) === true) {
+        if (key && cache.get(key) === false) {
           const span = document.createElement("span");
-          span.className = "real";
-          span.title = "Real word";
+          span.className = "error";
+          span.title = "Not a word";
           span.textContent = tok.text;
           result.appendChild(span);
         } else {
